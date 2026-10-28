@@ -1,0 +1,50 @@
+{
+  "dependencies": {
+    "@angular/common": "^22.2.0",
+    "@angular/compiler": "^22.2.0",
+    "@angular/core": "^22.2.0",
+    "@angular/forms": "^22.2.0",
+    "@angular/platform-browser": "^22.2.0",
+    "@angular/router": "^22.2.0",
+    "@angular/service-worker": "^22.2.3",
+    "rxjs": "~7.8.0",
+    "tslib": "^2.3.0"
+  },
+  "description": "Inspect JSON files locally in your browser: analysis, tree view, and sortable table view. A static PWA — no uploads, no server.",
+  "devDependencies": {
+    "@angular/build": "^22.2.5",
+    "@angular/cli": "^22.2.5",
+    "@angular/compiler-cli": "^22.2.0",
+    "jsdom": "^30.0.0",
+    "prettier": "^3.8.1",
+    "typescript": "~6.0.2",
+    "vitest": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=20.19.0"
+  },
+  "keywords": [
+    "angular",
+    "json",
+    "pwa",
+    "json-viewer",
+    "developer-tools"
+  ],
+  "license": "MIT",
+  "name": "json-insight",
+  "packageManager": "npm@10.9.4",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/enonymous1/json-insight.git"
+  },
+  "scripts": {
+    "build": "ng build",
+    "format": "prettier --write \"src/**/*.{ts,html,css}\" \"*.{json,md}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,html,css}\" \"*.{json,md}\"",
+    "ng": "ng",
+    "start": "ng serve",
+    "test": "ng test",
+    "watch": "ng build --watch --configuration development"
+  },
+  "version": "2.0.0"
+}

@@ -1,0 +1,52 @@
+@if (sortedData().length > 0 && headers().length > 0) {
+  <div class="w-full overflow-x-auto">
+    <table class="min-w-full bg-white border border-gray-200 rounded-lg">
+      <thead class="bg-gray-100">
+        <tr>
+          @for (header of headers(); track header) {
+            <th
+              class="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider select-none"
+              [attr.aria-sort]="
+                sortKey() === header
+                  ? sortDirection() === 'asc'
+                    ? 'ascending'
+                    : 'descending'
+                  : 'none'
+              "
+            >
+              <button
+                type="button"
+                (click)="sortBy(header)"
+                class="flex items-center bg-transparent border-0 p-0 font-bold uppercase tracking-wider text-xs text-gray-600 cursor-pointer"
+              >
+                <span>{{ header }}</span>
+                @if (sortKey() === header) {
+                  <span class="ml-2" aria-hidden="true">
+                    @if (sortDirection() === 'asc') {
+                      ▲
+                    } @else {
+                      ▼
+                    }
+                  </span>
+                }
+              </button>
+            </th>
+          }
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-200">
+        @for (item of sortedData(); track $index) {
+          <tr class="hover:bg-gray-50 transition-colors">
+            @for (header of headers(); track header) {
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                {{ getValue(item, header) }}
+              </td>
+            }
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+} @else {
+  <p class="text-sm text-gray-500 p-4">No rows to show.</p>
+}

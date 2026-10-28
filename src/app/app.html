@@ -1,0 +1,190 @@
+<header class="bg-gray-800 text-white shadow-lg">
+  <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+    <h1 class="text-2xl font-bold flex items-center">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        class="h-8 w-8 mr-2"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+        stroke-width="2"
+        aria-hidden="true"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"
+        />
+      </svg>
+      {{ title() }}
+    </h1>
+    <div class="flex items-center space-x-2">
+      <button
+        type="button"
+        (click)="fileInput.click()"
+        class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300 ease-in-out transform hover:scale-105"
+      >
+        Load JSON
+      </button>
+      <input
+        type="file"
+        #fileInput
+        (change)="handleFileInput($event)"
+        accept=".json,application/json"
+        class="hidden"
+        aria-label="Choose a JSON file"
+      />
+      @if (jsonData() !== null) {
+        <button
+          type="button"
+          (click)="downloadJson()"
+          class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300 ease-in-out transform hover:scale-105"
+        >
+          Save JSON
+        </button>
+        <button
+          type="button"
+          (click)="clearData()"
+          class="bg-gray-200 hover:bg-gray-50 text-gray-700 font-bold py-2 px-4 rounded-lg transition duration-300 ease-in-out"
+        >
+          Clear
+        </button>
+      }
+    </div>
+  </div>
+</header>
+
+<main class="container mx-auto p-4 sm:p-6 md:p-8">
+  @if (jsonData() === null && !error()) {
+    <div
+      class="dropzone text-center bg-white p-10 rounded-lg shadow-md border border-gray-200"
+      [class.dropzone-active]="dragOver()"
+      (dragover)="handleDragOver($event)"
+      (dragleave)="handleDragLeave()"
+      (drop)="handleDrop($event)"
+    >
+      <h2 class="text-2xl font-semibold text-gray-700 mb-2">Welcome to JSON Insight</h2>
+      <p class="text-gray-500">
+        Drop a JSON file here, load one with the button above, or paste JSON below.
+      </p>
+      <p class="text-gray-500 text-sm mt-4">
+        Everything runs locally in your browser. Files up to 10 MB.
+      </p>
+      <div class="mt-4">
+        <button
+          type="button"
+          (click)="showPaste.set(!showPaste())"
+          class="px-4 py-2 text-sm font-medium rounded-md bg-gray-200 text-gray-700 hover:bg-indigo-500 hover:text-white transition-colors"
+          [attr.aria-expanded]="showPaste()"
+        >
+          Paste JSON
+        </button>
+      </div>
+      @if (showPaste()) {
+        <div class="mt-4 text-left">
+          <label class="sr-only" for="paste-json">JSON text to load</label>
+          <textarea
+            id="paste-json"
+            class="paste-area w-full"
+            rows="8"
+            placeholder='{"example": true}'
+            [value]="pasteText()"
+            (input)="onPasteInput($event)"
+          ></textarea>
+          <button
+            type="button"
+            (click)="loadPaste()"
+            [disabled]="!pasteText().trim()"
+            class="mt-2 px-4 py-2 text-sm font-medium rounded-md bg-indigo-600 text-white hover:bg-indigo-700 transition-colors"
+          >
+            Load pasted JSON
+          </button>
+        </div>
+      }
+    </div>
+  }
+
+  @if (error()) {
+    <div
+      class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-md shadow-md"
+      role="alert"
+    >
+      <p class="font-bold">Error</p>
+      <p>{{ error() }}</p>
+    </div>
+  }
+
+  @if (jsonData() !== null) {
+    <div class="bg-white rounded-lg shadow-lg overflow-hidden border border-gray-200">
+      <div class="p-4 border-b border-gray-200 bg-gray-50">
+        <h3 class="text-xl font-semibold text-gray-800">{{ fileName() }}</h3>
+        @if (fileSizeLabel()) {
+          <p class="text-sm text-gray-500">{{ fileSizeLabel() }}</p>
+        }
+        <div class="mt-4 flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            (click)="setViewMode('analysis')"
+            [class.bg-indigo-600]="viewMode() === 'analysis'"
+            [class.text-white]="viewMode() === 'analysis'"
+            [class.bg-gray-200]="viewMode() !== 'analysis'"
+            [class.text-gray-700]="viewMode() !== 'analysis'"
+            [attr.aria-pressed]="viewMode() === 'analysis'"
+            class="px-4 py-2 text-sm font-medium rounded-md hover:bg-indigo-500 hover:text-white transition-colors"
+          >
+            Analysis
+          </button>
+          <button
+            type="button"
+            (click)="setViewMode('tree')"
+            [class.bg-indigo-600]="viewMode() === 'tree'"
+            [class.text-white]="viewMode() === 'tree'"
+            [class.bg-gray-200]="viewMode() !== 'tree'"
+            [class.text-gray-700]="viewMode() !== 'tree'"
+            [attr.aria-pressed]="viewMode() === 'tree'"
+            class="px-4 py-2 text-sm font-medium rounded-md hover:bg-indigo-500 hover:text-white transition-colors"
+          >
+            Tree View
+          </button>
+          @if (isDataArrayOfObjects()) {
+            <button
+              type="button"
+              (click)="setViewMode('table')"
+              [class.bg-indigo-600]="viewMode() === 'table'"
+              [class.text-white]="viewMode() === 'table'"
+              [class.bg-gray-200]="viewMode() !== 'table'"
+              [class.text-gray-700]="viewMode() !== 'table'"
+              [attr.aria-pressed]="viewMode() === 'table'"
+              class="px-4 py-2 text-sm font-medium rounded-md hover:bg-indigo-500 hover:text-white transition-colors"
+            >
+              Table View
+            </button>
+          }
+          <label class="sr-only" for="json-search">Search keys and values</label>
+          <input
+            id="json-search"
+            type="search"
+            class="search-input ml-2"
+            placeholder="Search keys and values…"
+            [value]="search()"
+            (input)="onSearchInput($event)"
+          />
+        </div>
+      </div>
+
+      <div class="p-4">
+        @switch (viewMode()) {
+          @case ('analysis') {
+            <app-data-analyzer [data]="jsonData()"></app-data-analyzer>
+          }
+          @case ('tree') {
+            <app-tree-view [data]="jsonData()" [search]="search()"></app-tree-view>
+          }
+          @case ('table') {
+            <app-table-view [data]="jsonData()" [search]="search()"></app-table-view>
+          }
+        }
+      </div>
+    </div>
+  }
+</main>

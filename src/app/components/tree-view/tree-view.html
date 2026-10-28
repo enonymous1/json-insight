@@ -1,0 +1,66 @@
+<div [class.pl-6]="!isRoot()" class="font-mono text-sm">
+  @if (isObject()) {
+    <button
+      type="button"
+      (click)="toggle()"
+      [attr.aria-expanded]="showChildren()"
+      [attr.aria-label]="
+        (nodeKey() ? nodeKey() + ': ' : '') + 'toggle ' + openingBracket() + itemCount()
+      "
+      class="flex items-center cursor-pointer group bg-transparent border-0 p-0 font-mono text-sm"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        class="h-4 w-4 mr-1 text-gray-500 transition-transform duration-200"
+        [class.rotate-90]="showChildren()"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+        aria-hidden="true"
+      >
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+      </svg>
+      @if (nodeKey()) {
+        <span class="text-indigo-700 font-semibold">{{ nodeKey() }}:</span>
+      }
+      <span class="text-gray-500 ml-2">{{ openingBracket() }}</span>
+      @if (!showChildren()) {
+        <span class="text-gray-400 ml-2 group-hover:text-gray-600"
+          >... {{ closingBracket() }} ({{ itemCount() }})</span
+        >
+      }
+    </button>
+
+    @if (showChildren()) {
+      <div class="border-l border-gray-200">
+        @for (itemKey of keys(); track itemKey) {
+          <app-tree-view
+            [data]="childValue(itemKey)"
+            [key]="itemKey"
+            [isRoot]="false"
+            [depth]="depth() + 1"
+            [search]="search()"
+          ></app-tree-view>
+        }
+        <span class="text-gray-500">{{ closingBracket() }}</span>
+      </div>
+    }
+  } @else {
+    <div class="flex items-center">
+      @if (nodeKey()) {
+        <span class="text-indigo-700 font-semibold">{{ nodeKey() }}:</span>
+      }
+      @if (getType(data()) === 'string') {
+        <span class="ml-2 text-green-700">"{{ data() }}"</span>
+      } @else if (getType(data()) === 'number') {
+        <span class="ml-2 text-blue-700">{{ data() }}</span>
+      } @else if (getType(data()) === 'boolean') {
+        <span class="ml-2 text-purple-700 font-bold">{{ data() }}</span>
+      } @else if (getType(data()) === 'null') {
+        <span class="ml-2 text-gray-500 italic">null</span>
+      } @else {
+        <span class="ml-2 text-gray-700">{{ data() }}</span>
+      }
+    </div>
+  }
+</div>
