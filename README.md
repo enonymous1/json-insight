@@ -22,8 +22,12 @@ Files up to 10 MB are accepted; larger files are rejected before parsing so a hu
 
 ## Prerequisites
 
-- Node.js 20.19 or newer (see `.nvmrc`, which pins the 22 line; CI tests Node 20 and 22).
-- npm 10 or newer (ships with Node 20.19+; `packageManager` in `package.json` records the version used here).
+- Node.js 22.22.3 or newer on the 22 line, or 24.15+ / 26+ — this is the
+  floor set by Angular CLI 22.2.5, not a preference (Node 20 fails before
+  any test runs; see CHANGELOG v2.1.1). `.nvmrc` pins the 22 line, so
+  `nvm use` in the repo root gets a working version; CI tests Node 22
+  and 24.
+- npm 10 or newer (ships with Node 22+; `packageManager` in `package.json` records the version used here).
 - A modern browser. No backend, database, API key, or account is needed.
 - Optional: Git, to clone the repository.
 

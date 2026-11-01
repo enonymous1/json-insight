@@ -10,7 +10,11 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [20, 22]
+        # Node 20 is NOT in this list on purpose: @angular/cli 22.2.5
+        # requires ^22.22.3 || ^24.15.0 || >=26.0.0, so a Node 20 job
+        # fails before any test runs (exit code 3). setup-node's "22"
+        # and "24" resolve to the latest patch on each line, above the floor.
+        node-version: [22, 24]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

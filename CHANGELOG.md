@@ -1,5 +1,25 @@
 # Changelog
 
+## 2.1.1 — 2026-11-01 (Node version floor fix)
+
+No code change. Fixes a CI/local failure that was not a test failure:
+
+- `npm test` on Node 20.20.2 failed before any test ran: "The Angular
+  CLI requires a minimum Node.js version of v22.22.3 or v24.15.0 or
+  v26.0.0", exit code 3. Root cause: `@angular/cli` 22.2.5 (and
+  `@angular/build`) declare engines
+  `^22.22.3 || ^24.15.0 || >=26.0.0`, but this repo still claimed
+  `>=20.19.0` in `package.json` and tested Node 20 in CI — a stale floor
+  carried over from the scaffold. The local verification here ran on
+  Node 24, which is why it never surfaced before push.
+- Fixed: `package.json` engines now mirror the CLI exactly
+  (`^22.22.3 || ^24.15.0 || >=26.0.0`), CI matrix changed from
+  `[20, 22]` to `[22, 24]`, README Prerequisites corrected, and the
+  lockfile root version/engines re-synced (it was still on 2.0.0).
+- If you hit this locally, the immediate workaround is switching Node,
+  not changing code: `nvm install 22` then `nvm use` in the repo root
+  (`.nvmrc` pins the 22 line).
+
 ## 2.1.0 — 2026-11-01 (dark theme)
 
 ### Added
