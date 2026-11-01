@@ -31,6 +31,17 @@ describe('App', () => {
     expect(app.viewMode()).toBe('analysis');
   });
 
+  it('a failed load clears the previous file name and size', () => {
+    const fixture = TestBed.createComponent(App);
+    const app = fixture.componentInstance;
+    app.loadJsonText('data.json', '{"a": 1}');
+    expect(app.fileName()).toBe('data.json');
+    app.loadJsonText('bad.json', '{"a": }');
+    expect(app.jsonData()).toBeNull();
+    expect(app.fileName()).toBe('');
+    expect(app.fileSize()).toBeNull();
+  });
+
   it('reports invalid JSON with the parser message and clears data', () => {
     const fixture = TestBed.createComponent(App);
     const app = fixture.componentInstance;
@@ -81,7 +92,7 @@ describe('App', () => {
     expect(app.error()).toBe('No JSON data to download.');
   });
 
-  it('downloadJson triggers a download with the file name', () => {
+  it('downloadJson triggers a download with the file name', async () => {
     const fixture = TestBed.createComponent(App);
     const app = fixture.componentInstance;
     app.loadJsonText('data.json', '{"a": 1}');
@@ -102,6 +113,9 @@ describe('App', () => {
     }) as typeof document.createElement);
     try {
       app.downloadJson();
+      // The blob URL is revoked on a tick, not synchronously, so the
+      // browser's download start cannot race the revoke.
+      await new Promise((resolve) => setTimeout(resolve, 0));
     } finally {
       vi.unstubAllGlobals();
       createElementSpy.mockRestore();
@@ -110,5 +124,26 @@ describe('App', () => {
     expect(captured.anchor?.download).toBe('data.json');
     expect(captured.anchor?.href).toBe('blob:mock');
     expect(revokeObjectURL).toHaveBeenCalledWith('blob:mock');
+  });
+
+  it('downloadJson downloads falsy JSON values instead of reporting no data', () => {
+    const fixture = TestBed.createComponent(App);
+    const app = fixture.componentInstance;
+    for (const text of ['0', 'false', '""']) {
+      app.loadJsonText('data.json', text);
+      // loadJsonText of a falsy value must not be mistaken for "no data".
+      expect(app.jsonData()).not.toBeNull();
+      const createObjectURL = vi.fn(() => 'blob:mock');
+      vi.stubGlobal('URL', { ...URL, createObjectURL, revokeObjectURL: vi.fn() });
+      const clickSpy = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
+      try {
+        app.downloadJson();
+        expect(app.error()).toBeNull();
+        expect(createObjectURL).toHaveBeenCalledTimes(1);
+      } finally {
+        vi.unstubAllGlobals();
+        clickSpy.mockRestore();
+      }
+    }
   });
 });

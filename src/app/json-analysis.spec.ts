@@ -3,6 +3,7 @@ import {
   compareJsonValues,
   formatBytes,
   getJsonType,
+  isArrayOfObjects,
   matchesSearch,
 } from './json-analysis';
 
@@ -82,10 +83,30 @@ describe('compareJsonValues', () => {
   });
 });
 
+describe('isArrayOfObjects', () => {
+  it('accepts non-empty arrays of objects and rejects the rest', () => {
+    expect(isArrayOfObjects([{ a: 1 }])).toBe(true);
+    expect(isArrayOfObjects([])).toBe(false);
+    expect(isArrayOfObjects([1, 2])).toBe(false);
+    expect(isArrayOfObjects([null])).toBe(false);
+    expect(isArrayOfObjects({ a: 1 })).toBe(false);
+    expect(isArrayOfObjects(null)).toBe(false);
+  });
+});
+
 describe('formatBytes', () => {
-  it('formats B, KB, and MB', () => {
+  it('formats B, KB, MB, and GB', () => {
     expect(formatBytes(500)).toBe('500 B');
     expect(formatBytes(2048)).toBe('2.0 KB');
     expect(formatBytes(3 * 1024 * 1024)).toBe('3.0 MB');
+    expect(formatBytes(2 * 1024 * 1024 * 1024)).toBe('2.0 GB');
+  });
+});
+
+describe('compareJsonValues mixed types', () => {
+  it('sorts by rank before value: booleans, then numbers, then strings', () => {
+    expect(compareJsonValues(true, 1, 'asc')).toBeLessThan(0);
+    expect(compareJsonValues(1, 'a', 'asc')).toBeLessThan(0);
+    expect(compareJsonValues('a', {}, 'asc')).toBeLessThan(0);
   });
 });

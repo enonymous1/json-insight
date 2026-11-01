@@ -1,5 +1,46 @@
 # Changelog
 
+## 2.0.1 — 2026-11-01 (staff review)
+
+Fixes and documentation from the staff review in `docs/REVIEW.md`. No
+behaviour change except where noted.
+
+### Fixed
+
+- Save JSON refused falsy JSON values (`0`, `false`, `""`); it now checks
+  against `null`, revokes the blob URL on a tick, and cleans up in a
+  `finally` (F01).
+- Templates used CSS utilities the hand-rolled stylesheet never defined
+  (`bg-transparent`, `border-0`, `p-0`, `px-2`, `py-1`, `pb-2`, `mt-2`);
+  tree toggles and table sort buttons rendered with browser-default
+  button styling, and the type-count pill had no padding (F02).
+- Failed loads no longer leave the previous file's name and size in
+  state (F04).
+- Secondary text contrast: gray-500 corrected to true Tailwind gray-500
+  (`#6b7280`); indigo-100 corrected to `#e0e7ff` (F06).
+
+### Changed
+
+- File loading for the picker and drag-and-drop merged into one
+  `loadFile` method; the picker stays deliberately more permissive than
+  drag-and-drop about extensions (F03, F07).
+- `isArrayOfObjects` extracted from `App` into `json-analysis.ts` and
+  unit-tested; the size limit shown in the UI is now derived from
+  `MAX_JSON_BYTES` instead of hardcoded (F09).
+- Removed unused `@angular/router` and `@angular/forms` dependencies
+  (F05).
+- README rewritten with Description, Prerequisites, Installation, Local
+  Development, and Deployment sections, plus an architecture diagram
+  (`docs/assets/architecture.svg`), a Privacy and limits section, and
+  `examples/sample.json`.
+
+### Added
+
+- JSDoc for analysis semantics, sort rank, and byte formatting;
+  `formatBytes` GB branch; tests for falsy downloads, stale-state
+  clearing, `isArrayOfObjects`, mixed-type sort rank, and GB formatting
+  (35 tests, up from 31).
+
 ## 2.0.0 — 2026-10-28
 
 Squashed public export of the original Angular 19 project. The original history is not included.

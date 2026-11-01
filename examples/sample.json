@@ -1,0 +1,4 @@
+[
+  { "age": 30, "name": "Alice", "tags": ["a", "b"] },
+  { "age": 25, "name": "Bob" }
+]

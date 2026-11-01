@@ -2,7 +2,7 @@ import { Component, computed, signal } from '@angular/core';
 import { DataAnalyzer } from './components/data-analyzer/data-analyzer';
 import { TableView } from './components/table-view/table-view';
 import { TreeView } from './components/tree-view/tree-view';
-import { formatBytes } from './json-analysis';
+import { formatBytes, isArrayOfObjects } from './json-analysis';
 
 export type ViewMode = 'tree' | 'table' | 'analysis';
 
@@ -27,44 +27,28 @@ export class App {
   readonly pasteText = signal('');
   readonly fileSize = signal<number | null>(null);
 
-  readonly isDataArrayOfObjects = computed(
-    () =>
-      Array.isArray(this.jsonData()) &&
-      this.jsonData() !== null &&
-      (this.jsonData() as unknown[]).length > 0 &&
-      typeof (this.jsonData() as unknown[])[0] === 'object' &&
-      (this.jsonData() as unknown[])[0] !== null,
-  );
+  readonly isDataArrayOfObjects = computed(() => isArrayOfObjects(this.jsonData()));
 
   protected readonly fileSizeLabel = computed(() => {
     const size = this.fileSize();
     return size === null ? '' : formatBytes(size);
   });
 
+  /** Single source of truth for the size limit shown in the empty state. */
+  protected readonly maxJsonSizeLabel = formatBytes(MAX_JSON_BYTES);
+
   handleFileInput(event: Event): void {
     const target = event.target as HTMLInputElement;
     const file = target.files?.[0];
+    // Reset so choosing the same file again still fires a change event.
     target.value = '';
     if (!file) {
-      this.error.set('No file selected.');
       return;
     }
-    if (file.size > MAX_JSON_BYTES) {
-      this.error.set(
-        `File is too large (${formatBytes(file.size)}). The limit is ${formatBytes(MAX_JSON_BYTES)}.`,
-      );
-      this.jsonData.set(null);
-      return;
-    }
-    const reader = new FileReader();
-    reader.onload = () => {
-      this.loadJsonText(file.name, reader.result as string, file.size);
-    };
-    reader.onerror = () => {
-      this.error.set('Failed to read the file.');
-      this.jsonData.set(null);
-    };
-    reader.readAsText(file);
+    // The picker is deliberately more permissive than drag-and-drop: its
+    // accept attribute is advisory and a user can pick a .txt file that
+    // still contains JSON. The parser, not the extension, is the gate here.
+    this.loadFile(file);
   }
 
   handleDrop(event: DragEvent): void {
@@ -78,11 +62,19 @@ export class App {
       this.error.set('Only .json files are accepted.');
       return;
     }
+    this.loadFile(file);
+  }
+
+  /**
+   * Shared size check + FileReader path for the picker and drag-and-drop.
+   * Kept as one method so the two entry points cannot drift apart again:
+   * v2.0.0 duplicated the size check and the reader boilerplate in both.
+   */
+  private loadFile(file: File): void {
     if (file.size > MAX_JSON_BYTES) {
-      this.error.set(
+      this.failLoad(
         `File is too large (${formatBytes(file.size)}). The limit is ${formatBytes(MAX_JSON_BYTES)}.`,
       );
-      this.jsonData.set(null);
       return;
     }
     const reader = new FileReader();
@@ -90,8 +82,7 @@ export class App {
       this.loadJsonText(file.name, reader.result as string, file.size);
     };
     reader.onerror = () => {
-      this.error.set('Failed to read the file.');
-      this.jsonData.set(null);
+      this.failLoad('Failed to read the file.');
     };
     reader.readAsText(file);
   }
@@ -105,21 +96,31 @@ export class App {
     this.dragOver.set(false);
   }
 
+  /**
+   * Single failure path for loading. Clearing fileName/fileSize here
+   * matters: without it a failed load after a successful one left the
+   * previous file's name and size in the signals while jsonData was null.
+   */
+  private failLoad(message: string): void {
+    this.error.set(message);
+    this.jsonData.set(null);
+    this.fileName.set('');
+    this.fileSize.set(null);
+  }
+
   /** Parse pasted or loaded text. Kept separate from FileReader so tests can drive it directly. */
   loadJsonText(name: string, text: string, size: number | null = null): void {
     const byteSize =
       size ??
       (typeof TextEncoder !== 'undefined' ? new TextEncoder().encode(text).length : text.length);
     if (byteSize > MAX_JSON_BYTES) {
-      this.error.set(
+      this.failLoad(
         `Content is too large (${formatBytes(byteSize)}). The limit is ${formatBytes(MAX_JSON_BYTES)}.`,
       );
-      this.jsonData.set(null);
       return;
     }
     if (!text.trim()) {
-      this.error.set('Nothing to load: the content is empty.');
-      this.jsonData.set(null);
+      this.failLoad('Nothing to load: the content is empty.');
       return;
     }
     try {
@@ -130,8 +131,7 @@ export class App {
       this.viewMode.set('analysis');
       this.showPaste.set(false);
     } catch (err) {
-      this.error.set(`Invalid JSON: ${err instanceof Error ? err.message : String(err)}`);
-      this.jsonData.set(null);
+      this.failLoad(`Invalid JSON: ${err instanceof Error ? err.message : String(err)}`);
     }
   }
 
@@ -141,7 +141,11 @@ export class App {
 
   downloadJson(): void {
     const data = this.jsonData();
-    if (!data) {
+    // Compare against null, not truthiness: valid JSON values 0, false,
+    // and "" are falsy, and v2.0.0 refused to download any of them.
+    // A literal JSON null still loads as null, so it is indistinguishable
+    // from "no data" here; that edge is documented in docs/REVIEW.md.
+    if (data === null) {
       this.error.set('No JSON data to download.');
       return;
     }
@@ -149,12 +153,18 @@ export class App {
     const blob = new Blob([dataStr], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = url;
-    a.download = this.fileName() || 'data.json';
-    document.body.appendChild(a);
-    a.click();
-    URL.revokeObjectURL(url);
-    document.body.removeChild(a);
+    try {
+      a.href = url;
+      a.download = this.fileName() || 'data.json';
+      document.body.appendChild(a);
+      a.click();
+    } finally {
+      // Revoke on a tick, not synchronously: revoking immediately after
+      // click() can race the browser's download start. The finally also
+      // guarantees the anchor and URL are cleaned up if click() throws.
+      setTimeout(() => URL.revokeObjectURL(url), 0);
+      a.remove();
+    }
   }
 
   clearData(): void {

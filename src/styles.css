@@ -50,7 +50,7 @@ body {
   background-color: #e2e8f0;
 }
 .bg-indigo-100 {
-  background-color: #ebf4ff;
+  background-color: #e0e7ff;
 }
 
 .text-white {
@@ -66,7 +66,10 @@ body {
   color: #718096;
 }
 .text-gray-500 {
-  color: #a0aec0;
+  /* True Tailwind gray-500, not the old gray-400 value: #a0aec0 on white
+     is ~2.4:1 contrast and fails WCAG AA for the secondary text that uses
+     this class. #6b7280 is ~4.8:1. */
+  color: #6b7280;
 }
 .text-gray-400 {
   color: #cbd5e0;
@@ -418,6 +421,36 @@ table {
 
 .flex-wrap {
   flex-wrap: wrap;
+}
+
+/* Additions for v2.0.1: utilities the templates already used but this
+   hand-rolled Tailwind mimic never defined, so they silently did nothing.
+   Tree toggles and table sort buttons rendered with browser-default button
+   backgrounds/borders, the type-count pill had no padding, and the paste
+   button had no top margin. This is the failure mode of a hand-rolled
+   utility set: a missing class is not a build error. See docs/REVIEW.md. */
+.bg-transparent {
+  background-color: transparent;
+}
+.border-0 {
+  border-width: 0;
+}
+.p-0 {
+  padding: 0;
+}
+.pb-2 {
+  padding-bottom: 0.5rem;
+}
+.px-2 {
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+}
+.py-1 {
+  padding-top: 0.25rem;
+  padding-bottom: 0.25rem;
+}
+.mt-2 {
+  margin-top: 0.5rem;
 }
 
 /* Additions for v2.0.0: drag-and-drop, search, paste panel, and focus styles. */

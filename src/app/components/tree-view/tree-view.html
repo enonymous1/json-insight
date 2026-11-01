@@ -5,7 +5,7 @@
       (click)="toggle()"
       [attr.aria-expanded]="showChildren()"
       [attr.aria-label]="
-        (nodeKey() ? nodeKey() + ': ' : '') + 'toggle ' + openingBracket() + itemCount()
+        (nodeKey() ? nodeKey() + ': ' : '') + 'toggle ' + openingBracket() + ' ' + itemCount()
       "
       class="flex items-center cursor-pointer group bg-transparent border-0 p-0 font-mono text-sm"
     >

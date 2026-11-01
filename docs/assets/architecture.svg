@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="880" height="340" viewBox="0 0 880 340" role="img" aria-labelledby="title desc">
+  <title id="title">JSON Insight architecture</title>
+  <desc id="desc">A local JSON file or pasted text enters the App component, which validates the 10 MB limit and parses it. The parsed value flows to pure helpers in json-analysis and to three views: Analysis, Tree, and Table. The App is a static PWA served by any static host, with a service worker caching the app shell for offline use. No data leaves the browser.</desc>
+  <style>
+    .box { fill: #ffffff; stroke: #2d3748; stroke-width: 1.5; rx: 8; }
+    .accent { fill: #e0e7ff; stroke: #4c51bf; stroke-width: 1.5; rx: 8; }
+    .note { fill: #f7fafc; stroke: #a0aec0; stroke-width: 1; rx: 8; }
+    text { font-family: -apple-system, "Segoe UI", Roboto, sans-serif; fill: #2d3748; }
+    .h { font-size: 14px; font-weight: 700; }
+    .s { font-size: 12px; fill: #4a5568; }
+    .arrow { stroke: #4c51bf; stroke-width: 1.5; fill: none; marker-end: url(#ah); }
+  </style>
+  <defs><marker id="ah" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#4c51bf"/></marker></defs>
+
+  <rect rx="8" class="box" x="20" y="40" width="180" height="70"/>
+  <text class="h" x="35" y="68">Input</text>
+  <text class="s" x="35" y="88">.json file, drop,</text>
+  <text class="s" x="35" y="104">or pasted text</text>
+
+  <rect rx="8" class="accent" x="260" y="40" width="220" height="70"/>
+  <text class="h" x="275" y="68">App component</text>
+  <text class="s" x="275" y="88">signals, 10 MB guard,</text>
+  <text class="s" x="275" y="104">JSON.parse, view state</text>
+
+  <rect rx="8" class="box" x="540" y="40" width="200" height="70"/>
+  <text class="h" x="555" y="68">json-analysis.ts</text>
+  <text class="s" x="555" y="88">pure helpers, no Angular:</text>
+  <text class="s" x="555" y="104">analysis, search, sort</text>
+
+  <rect rx="8" class="box" x="540" y="160" width="200" height="70"/>
+  <text class="h" x="555" y="188">Views</text>
+  <text class="s" x="555" y="208">Analysis · Tree · Table</text>
+  <text class="s" x="555" y="224">(signal inputs)</text>
+
+  <rect rx="8" class="note" x="260" y="160" width="220" height="70"/>
+  <text class="h" x="275" y="188">Output</text>
+  <text class="s" x="275" y="208">Save JSON download</text>
+  <text class="s" x="275" y="224">(Blob, in-browser only)</text>
+
+  <rect rx="8" class="note" x="20" y="160" width="180" height="70"/>
+  <text class="h" x="35" y="188">Static host + PWA</text>
+  <text class="s" x="35" y="208">GitHub Pages / any</text>
+  <text class="s" x="35" y="224">static host, ngsw cache</text>
+
+  <path class="arrow" d="M200,75 L260,75"/>
+  <path class="arrow" d="M480,75 L540,75"/>
+  <path class="arrow" d="M640,110 L640,160"/>
+  <path class="arrow" d="M540,195 L480,195"/>
+  <path class="arrow" d="M260,195 L200,195"/>
+
+  <text class="s" x="20" y="280">No server, no upload, no account. The parsed JSON lives only in memory in the tab;</text>
+  <text class="s" x="20" y="298">closing the tab or pressing Clear discards it. The service worker caches the app shell, not your data.</text>
+</svg>
