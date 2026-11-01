@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { vi } from 'vitest';
 import { App, MAX_JSON_BYTES } from './app';
+import { THEME_STORAGE_KEY } from './theme';
 
 describe('App', () => {
   beforeEach(async () => {
@@ -19,6 +20,25 @@ describe('App', () => {
     fixture.detectChanges();
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.querySelector('h1')?.textContent).toContain('JSON Insight');
+  });
+
+  it('toggleTheme flips the theme, the <html> class, and the saved choice', () => {
+    const fixture = TestBed.createComponent(App);
+    const app = fixture.componentInstance;
+    try {
+      expect(app.theme()).toBe('light');
+      app.toggleTheme();
+      expect(app.theme()).toBe('dark');
+      expect(document.documentElement.classList.contains('dark')).toBe(true);
+      expect(window.localStorage.getItem(THEME_STORAGE_KEY)).toBe('dark');
+      app.toggleTheme();
+      expect(app.theme()).toBe('light');
+      expect(document.documentElement.classList.contains('dark')).toBe(false);
+      expect(window.localStorage.getItem(THEME_STORAGE_KEY)).toBe('light');
+    } finally {
+      document.documentElement.classList.remove('dark');
+      window.localStorage.removeItem(THEME_STORAGE_KEY);
+    }
   });
 
   it('loads valid JSON text and clears the error', () => {

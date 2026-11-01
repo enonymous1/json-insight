@@ -3,3 +3,10 @@
   background-color: #f7fafc;
   min-height: 100vh;
 }
+
+/* :host-context is how a component-scoped sheet sees the .dark class on
+   <html>; a plain `.dark :host` rule would not match through Angular's
+   view encapsulation. */
+:host-context(.dark) {
+  background-color: #171923;
+}

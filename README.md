@@ -11,6 +11,10 @@ Load a `.json` file by choosing it, dropping it on the page, or pasting JSON tex
 - **Table View** — for arrays of objects. Headers are the union of all keys, sorting never mutates your data, and nulls always sort last.
 - **Search** — filter keys and values across the tree and table views.
 - **Save JSON** — download the loaded data pretty-printed.
+- **Dark theme** — follows your system preference on first visit, with a
+  Dark/Light toggle in the header. Your choice is saved locally (in
+  `localStorage`, under `json-insight-theme`) and wins over later system
+  changes; until you toggle, the app keeps following the system.
 
 Files up to 10 MB are accepted; larger files are rejected before parsing so a huge file cannot freeze the tab. Everything is parsed and rendered on the client, in memory only — closing the tab or pressing Clear discards your data.
 
@@ -94,7 +98,7 @@ Components use signal inputs and computed values with Angular's `@if` / `@for` /
 
 ### Privacy and limits
 
-- No network request is made for your data. The only network activity is the browser fetching the app itself and the service worker caching it for offline use.
+- No network request is made for your data. The only network activity is the browser fetching the app itself and the service worker caching it for offline use. The dark-theme choice is the only thing stored, and it is stored in your browser's `localStorage`, not on any server.
 - The service worker caches the app shell, not your JSON. Your data is never written to disk by the app (except when you explicitly press Save JSON).
 - The 10 MB limit is `MAX_JSON_BYTES` in `src/app/app.ts` and is checked before parsing, for files and for pasted text alike. A literal JSON `null` loads as "no data" (it is indistinguishable from the empty state); `0`, `false`, and `""` are real data and can be downloaded.
 - Very large or deeply nested documents can still be slow to render: the tree and table render every node and row with no virtualization or row cap. That is a known limit, documented in `docs/REVIEW.md`, not a data-loss risk.

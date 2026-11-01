@@ -1,5 +1,21 @@
 # Changelog
 
+## 2.1.0 — 2026-11-01 (dark theme)
+
+### Added
+
+- Dark theme, following the system preference on first visit, with a
+  Dark/Light toggle in the header. The toggle saves an explicit choice
+  in `localStorage` (`json-insight-theme`); until you toggle, the app
+  keeps following system changes. An inline script in `index.html`
+  applies the theme before the first paint so dark-preference users do
+  not see a light flash on load. Theme logic lives in `src/app/theme.ts`
+  (pure, unit-tested) and dark overrides live at the end of
+  `src/styles.css`; the app shell background uses `:host-context(.dark)`
+  so it works through Angular's view encapsulation.
+- Theme tests: saved-choice precedence, corrupted-value fallback,
+  `.dark` class toggling, and persist-only-on-toggle.
+
 ## 2.0.1 — 2026-11-01 (staff review)
 
 Fixes and documentation from the staff review in `docs/REVIEW.md`. No

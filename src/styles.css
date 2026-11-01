@@ -494,3 +494,100 @@ button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+/* Dark theme (v2.1.0). The theme is a .dark class on <html>, set by the
+   pre-boot script in index.html and by App.toggleTheme(). These overrides
+   must stay after the light definitions above: `.dark .bg-white` beats
+   `.bg-white` on specificity, and order breaks ties elsewhere. This is
+   still the hand-rolled utility set, not real Tailwind — adding a new
+   light utility without its dark counterpart here is how a component
+   silently stays light in dark mode, so check this block on any
+   template change that introduces a new colour class. */
+html.dark body {
+  background-color: #171923;
+  color: #e2e8f0;
+}
+.dark .bg-white {
+  background-color: #1a202c;
+}
+.dark .bg-gray-50 {
+  background-color: #2d3748;
+}
+.dark .bg-gray-100 {
+  background-color: #2d3748;
+}
+.dark .bg-gray-200 {
+  background-color: #4a5568;
+}
+.dark .bg-gray-800 {
+  background-color: #171923;
+}
+.dark .bg-red-100 {
+  background-color: #742a2a;
+}
+.dark .bg-indigo-100 {
+  background-color: #434190;
+}
+.dark .text-gray-800 {
+  color: #edf2f7;
+}
+.dark .text-gray-700 {
+  color: #e2e8f0;
+}
+.dark .text-gray-600 {
+  color: #cbd5e0;
+}
+.dark .text-gray-500 {
+  color: #a0aec0;
+}
+.dark .text-gray-400 {
+  color: #a0aec0;
+}
+.dark .text-red-700 {
+  color: #feb2b2;
+}
+.dark .text-indigo-700 {
+  color: #a3bffa;
+}
+.dark .text-indigo-600 {
+  color: #7f9cf5;
+}
+.dark .text-indigo-800 {
+  color: #c7d2fe;
+}
+.dark .text-green-700 {
+  color: #9ae6b4;
+}
+.dark .text-blue-700 {
+  color: #90cdf4;
+}
+.dark .text-purple-700 {
+  color: #d6bcfa;
+}
+.dark .border,
+.dark .border-gray-200,
+.dark .border-b,
+.dark .border-l {
+  border-color: #4a5568;
+}
+.dark .border-red-500 {
+  border-color: #fc8181;
+}
+.dark .divide-gray-200 > * + * {
+  border-color: #4a5568;
+}
+.dark .search-input,
+.dark .paste-area {
+  color: #edf2f7;
+  background-color: #2d3748;
+  border-color: #4a5568;
+}
+.dark .dropzone-active {
+  background-color: #2a4365;
+}
+.dark .hover\:bg-gray-50:hover {
+  background-color: #2d3748;
+}
+.dark .hover\:text-gray-600:hover {
+  color: #cbd5e0;
+}

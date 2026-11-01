@@ -1,8 +1,9 @@
-import { Component, computed, signal } from '@angular/core';
+import { Component, computed, OnDestroy, OnInit, signal } from '@angular/core';
 import { DataAnalyzer } from './components/data-analyzer/data-analyzer';
 import { TableView } from './components/table-view/table-view';
 import { TreeView } from './components/tree-view/tree-view';
 import { formatBytes, isArrayOfObjects } from './json-analysis';
+import { applyTheme, hasExplicitThemeChoice, readInitialTheme, type Theme } from './theme';
 
 export type ViewMode = 'tree' | 'table' | 'analysis';
 
@@ -15,8 +16,49 @@ export const MAX_JSON_BYTES = 10 * 1024 * 1024;
   templateUrl: './app.html',
   styleUrl: './app.css',
 })
-export class App {
+export class App implements OnInit, OnDestroy {
   readonly title = signal('JSON Insight');
+  readonly theme = signal<Theme>(readInitialTheme());
+  readonly isDark = computed(() => this.theme() === 'dark');
+  private systemThemeQuery: MediaQueryList | null = null;
+  private readonly onSystemThemeChange = (event: MediaQueryListEvent): void => {
+    // Only follow the system while the user has not made an explicit
+    // choice; once they toggle, their choice wins over system changes.
+    if (!hasExplicitThemeChoice()) {
+      this.setTheme(event.matches ? 'dark' : 'light', false);
+    }
+  };
+
+  ngOnInit(): void {
+    // Apply the resolved theme to <html> in case the pre-boot script in
+    // index.html did not run, without persisting: this is the resolved
+    // value, not a user choice.
+    applyTheme(this.theme(), false);
+    try {
+      if (typeof window.matchMedia === 'function') {
+        this.systemThemeQuery = window.matchMedia('(prefers-color-scheme: dark)');
+        this.systemThemeQuery.addEventListener('change', this.onSystemThemeChange);
+      }
+    } catch {
+      this.systemThemeQuery = null;
+    }
+  }
+
+  ngOnDestroy(): void {
+    this.systemThemeQuery?.removeEventListener('change', this.onSystemThemeChange);
+  }
+
+  /** Set the theme, update <html>, and optionally save it as the user's choice. */
+  private setTheme(theme: Theme, persist: boolean): void {
+    this.theme.set(theme);
+    applyTheme(theme, persist);
+  }
+
+  /** Header toggle: flipping the theme always counts as an explicit choice. */
+  toggleTheme(): void {
+    this.setTheme(this.theme() === 'dark' ? 'light' : 'dark', true);
+  }
+
   readonly jsonData = signal<unknown>(null);
   readonly fileName = signal('');
   readonly error = signal<string | null>(null);
